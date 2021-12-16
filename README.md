@@ -1,1 +1,1 @@
-# vedro-pycharm-plugin
+# Vedro Pycharm Plugin
