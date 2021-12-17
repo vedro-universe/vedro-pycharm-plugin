@@ -7,8 +7,12 @@ import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.InvalidDataException;
+import com.intellij.openapi.util.JDOMExternalizerUtil;
 import com.intellij.openapi.util.NlsActions;
+import com.intellij.openapi.util.WriteExternalException;
 import com.jetbrains.python.testing.AbstractPythonTestRunConfiguration;
+import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,11 +81,25 @@ public class VedroRunConfiguration extends AbstractPythonTestRunConfiguration<Ve
 
     @Override
     protected SettingsEditor<VedroRunConfiguration> createConfigurationEditor() {
-        return null;
+        return new VedroSettingsEditorForm(getProject(), this);
     }
 
     @Override
     public @Nullable RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException {
         return new VedroCommandLineState(this, environment);
+    }
+
+    @Override
+    public void writeExternal(@NotNull Element element) throws WriteExternalException {
+        super.writeExternal(element);
+        JDOMExternalizerUtil.writeField(element, "BOOTSTRAP_PATH", bootstrapPath);
+        JDOMExternalizerUtil.writeField(element, "RUNNER_OPTIONS", runnerOptions);
+    }
+
+    @Override
+    public void readExternal(@NotNull Element element) throws InvalidDataException {
+        super.readExternal(element);
+        bootstrapPath = JDOMExternalizerUtil.readField(element, "BOOTSTRAP_PATH");
+        runnerOptions = JDOMExternalizerUtil.readField(element, "RUNNER_OPTIONS");
     }
 }
