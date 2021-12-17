@@ -43,14 +43,17 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         VirtualFile file = element.getContainingFile().getVirtualFile();
         Path bootstrapPath = findBootstrap(file, configuration.getProject().getBasePath(), configuration.getDefaultBoostrapName());
         if (bootstrapPath == null) {
-            return false;
+            Path workingDirectory = Paths.get(configuration.getWorkingDirectory());
+            Path defaultBootstrapPath = Paths.get(configuration.getDefaultBoostrapName());
+            updateConfiguration(configuration, workingDirectory, defaultBootstrapPath, file.getPath());
+            return true;
         }
 
         Path boostrapDir  = bootstrapPath.getParent();
         Path filePath = Paths.get(file.getPath());
         String target = boostrapDir.relativize(filePath).toString();
 
-        updateConfiguration(configuration, bootstrapPath, target);
+        updateConfiguration(configuration, boostrapDir, bootstrapPath, target);
 
         return true;
     }
@@ -65,21 +68,23 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         VirtualFile file = element.getContainingFile().getVirtualFile();
         Path bootstrapPath = findBootstrap(file, configuration.getProject().getBasePath(), configuration.getDefaultBoostrapName());
         if (bootstrapPath == null) {
-            return false;
+            Path workingDirectory = Paths.get(configuration.getWorkingDirectory());
+            Path defaultBootstrapPath = Paths.get(configuration.getDefaultBoostrapName());
+            updateConfiguration(configuration, workingDirectory, defaultBootstrapPath, file.getPath());
+            return true;
         }
 
         Path boostrapDir  = bootstrapPath.getParent();
         Path filePath = Paths.get(file.getPath());
         String target = boostrapDir.relativize(filePath).toString();
 
-        updateConfiguration(configuration, bootstrapPath, target + "::" + clsName + "#" + decoratorIndex);
+        updateConfiguration(configuration, boostrapDir, bootstrapPath, target + "::" + clsName + "#" + decoratorIndex);
 
         return true;
     }
 
-    protected void updateConfiguration(@NotNull VedroRunConfiguration configuration, @NotNull Path bootstrapPath, @NotNull String target) {
-        Path boostrapDir = bootstrapPath.getParent();
-        configuration.setWorkingDirectory(boostrapDir.toString());
+    protected void updateConfiguration(@NotNull VedroRunConfiguration configuration, @NotNull Path workingDirectory, @NotNull Path bootstrapPath, @NotNull String target) {
+        configuration.setWorkingDirectory(workingDirectory.toString());
         configuration.setBootstrapPath(bootstrapPath.toString());
 
         configuration.setTarget(target);
