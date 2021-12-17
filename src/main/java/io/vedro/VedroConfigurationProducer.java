@@ -1,5 +1,6 @@
 package io.vedro;
 
+import com.intellij.execution.Location;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.LazyRunConfigurationProducer;
 import com.intellij.execution.configurations.ConfigurationFactory;
@@ -25,62 +26,87 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
     @Override
     protected boolean setupConfigurationFromContext(@NotNull VedroRunConfiguration configuration, @NotNull ConfigurationContext context, @NotNull Ref<PsiElement> sourceElement) {
         PsiElement element = sourceElement.get();
+        return setupConfiguration(configuration, element);
+    }
 
+    protected boolean setupConfiguration(@NotNull VedroRunConfiguration configuration, @NotNull PsiElement element) {
         if (element instanceof PyClass) {
-            VirtualFile file = element.getContainingFile().getVirtualFile();
-            Path bootstrapPath = findBootstrap(file, configuration.getProject().getBasePath(), configuration.getDefaultBoostrapName());
-            if (bootstrapPath == null) {
-                return false;
-            }
-
-            Path boostrapDir  = bootstrapPath.getParent();
-            configuration.setWorkingDirectory(boostrapDir.toString());
-            configuration.setBootstrapPath(bootstrapPath.toString());
-
-            Path filePath = Paths.get(file.getPath());
-            configuration.setTarget(boostrapDir.relativize(filePath).toString());
-            configuration.setRunnerOptions("-r pycharm");
-
-            configuration.setSuggestedName("vedro: run scenario");
-            configuration.setActionName("vedro: run scenario");
-
-            return true;
+            return setupConfigurationForPyClass(configuration, (PyClass) element);
         }
-
         if (element instanceof PyDecorator) {
-            String clsName = getClassName((PyDecorator) element);
-            int decoratorIndex = getDecoratorIndex((PyDecorator) element);
-            if (clsName == null || decoratorIndex == -1) {
-                return false;
-            }
+            return setupConfigurationForPyDecorator(configuration, (PyDecorator) element);
+        }
+        return false;
+    }
 
-            VirtualFile file = element.getContainingFile().getVirtualFile();
-            Path bootstrapPath = findBootstrap(file, configuration.getProject().getBasePath(), configuration.getDefaultBoostrapName());
-            if (bootstrapPath == null) {
-                return false;
-            }
-
-            Path boostrapDir  = bootstrapPath.getParent();
-            configuration.setWorkingDirectory(boostrapDir.toString());
-            configuration.setBootstrapPath(bootstrapPath.toString());
-
-            Path filePath = Paths.get(file.getPath());
-            String target = boostrapDir.relativize(filePath).toString();
-            configuration.setTarget(target + "::" + clsName + "#" + decoratorIndex);
-            configuration.setRunnerOptions("-r pycharm");
-
-            configuration.setSuggestedName("vedro: run scenario");
-            configuration.setActionName("vedro: run scenario");
-
-            return true;
+    protected boolean setupConfigurationForPyClass(@NotNull VedroRunConfiguration configuration, @NotNull PyClass element) {
+        VirtualFile file = element.getContainingFile().getVirtualFile();
+        Path bootstrapPath = findBootstrap(file, configuration.getProject().getBasePath(), configuration.getDefaultBoostrapName());
+        if (bootstrapPath == null) {
+            return false;
         }
 
-        return false;
+        Path boostrapDir  = bootstrapPath.getParent();
+        Path filePath = Paths.get(file.getPath());
+        String target = boostrapDir.relativize(filePath).toString();
+
+        updateConfiguration(configuration, bootstrapPath, target);
+
+        return true;
+    }
+
+    protected boolean setupConfigurationForPyDecorator(@NotNull VedroRunConfiguration configuration, @NotNull PyDecorator element) {
+        String clsName = getClassName(element);
+        int decoratorIndex = getDecoratorIndex(element);
+        if (clsName == null || decoratorIndex == -1) {
+            return false;
+        }
+
+        VirtualFile file = element.getContainingFile().getVirtualFile();
+        Path bootstrapPath = findBootstrap(file, configuration.getProject().getBasePath(), configuration.getDefaultBoostrapName());
+        if (bootstrapPath == null) {
+            return false;
+        }
+
+        Path boostrapDir  = bootstrapPath.getParent();
+        Path filePath = Paths.get(file.getPath());
+        String target = boostrapDir.relativize(filePath).toString();
+
+        updateConfiguration(configuration, bootstrapPath, target + "::" + clsName + "#" + decoratorIndex);
+
+        return true;
+    }
+
+    protected void updateConfiguration(@NotNull VedroRunConfiguration configuration, @NotNull Path bootstrapPath, @NotNull String target) {
+        Path boostrapDir = bootstrapPath.getParent();
+        configuration.setWorkingDirectory(boostrapDir.toString());
+        configuration.setBootstrapPath(bootstrapPath.toString());
+
+        configuration.setTarget(target);
+        configuration.setRunnerOptions("-r pycharm");
+
+        configuration.setSuggestedName("vedro scenario");
+        configuration.setActionName("vedro scenario");
     }
 
     @Override
     public boolean isConfigurationFromContext(@NotNull VedroRunConfiguration configuration, @NotNull ConfigurationContext context) {
-        return false;
+        Location<?> location = context.getLocation();
+        if (location == null) {
+            return false;
+        }
+        PsiElement element = location.getPsiElement();
+        VedroRunConfiguration tmpConf = new VedroRunConfiguration(configuration.getProject(), configuration.getFactory());
+        if (!setupConfiguration(tmpConf, element)) {
+            return false;
+        }
+
+        if (!configuration.getBootstrapPath().equals(tmpConf.getBootstrapPath())) {
+            return false;
+        }
+        // Move to findExistingConfiguration
+        configuration.setTarget(tmpConf.getTarget());
+        return true;
     }
 
     @Nullable
