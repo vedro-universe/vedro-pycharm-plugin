@@ -5,9 +5,9 @@
     <vendor email="nikitanovosibirsk@yandex.com" url="https://github.com/nikitanovosibirsk">Nikita Tsvetkov</vendor>
 
     <description><![CDATA[
-        Description here
-        Description here
-        Description here
+        <p>Plugin for <a href="https://vedro.io">Vedro</a> testing framework.</p>
+        <br />
+        <p>This plugin requires version 1.3.5 or higher.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
