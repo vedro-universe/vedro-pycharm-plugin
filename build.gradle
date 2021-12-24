@@ -14,9 +14,9 @@ targetCompatibility = 1.11
 // Docs https://github.com/JetBrains/gradle-intellij-plugin
 apply plugin: "org.jetbrains.intellij"
 intellij {
-    plugins = ["PythonCore"]
+    plugins = ["python"]
     version = "2020.3"
-    type = "PC"
+    type = "PY"
     downloadSources = false
     updateSinceUntilBuild = false
 }
