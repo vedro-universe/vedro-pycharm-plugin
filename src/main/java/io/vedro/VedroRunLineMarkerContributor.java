@@ -18,7 +18,7 @@ public class VedroRunLineMarkerContributor extends RunLineMarkerContributor{
 
     protected boolean isScenario(PyClass cls) {
         String clsName = String.valueOf(cls.getName());
-        if (!clsName.startsWith("Scenario")) {
+        if (!clsName.startsWith("Scenario") && !clsName.endsWith("Scenario")) {
             return false;
         }
         return cls.isSubclass("vedro._scenario.Scenario", null);

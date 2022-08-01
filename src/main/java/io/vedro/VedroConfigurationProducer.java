@@ -49,11 +49,15 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
             return true;
         }
 
+        String clsName = element.getName();
+        if (clsName == null) {
+            return false;
+        }
         Path boostrapDir  = bootstrapPath.getParent();
         Path filePath = Paths.get(file.getPath());
         String target = boostrapDir.relativize(filePath).toString();
 
-        updateConfiguration(configuration, boostrapDir, bootstrapPath, target);
+        updateConfiguration(configuration, boostrapDir, bootstrapPath, target + "::" + clsName);
 
         return true;
     }
