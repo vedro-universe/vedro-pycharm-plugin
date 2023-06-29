@@ -18,20 +18,19 @@ import org.jetbrains.annotations.Nullable;
 
 public class VedroRunConfiguration extends AbstractPythonTestRunConfiguration<VedroRunConfiguration> {
     protected String target = "";
-    protected String bootstrapPath = "";
     protected String runnerOptions = "";
 
     protected String actionName = "";
     protected String suggestedName = "";
 
-    protected String defaultBoostrapName = "bootstrap.py";
+    protected String configFileName = "vedro.cfg.py";
 
     public VedroRunConfiguration(Project project, ConfigurationFactory factory) {
         super(project, factory);
     }
 
-    public String getDefaultBoostrapName() {
-        return defaultBoostrapName;
+    public String getConfigFileName() {
+        return configFileName;
     }
 
     public void setTarget(String target) {
@@ -40,14 +39,6 @@ public class VedroRunConfiguration extends AbstractPythonTestRunConfiguration<Ve
 
     public String getTarget() {
         return target;
-    }
-
-    public void setBootstrapPath(String bootstrapPath) {
-        this.bootstrapPath = bootstrapPath;
-    }
-
-    public String getBootstrapPath() {
-        return bootstrapPath;
     }
 
     public void setRunnerOptions(String runnerOptions) {
@@ -92,14 +83,12 @@ public class VedroRunConfiguration extends AbstractPythonTestRunConfiguration<Ve
     @Override
     public void writeExternal(@NotNull Element element) throws WriteExternalException {
         super.writeExternal(element);
-        JDOMExternalizerUtil.writeField(element, "BOOTSTRAP_PATH", bootstrapPath);
         JDOMExternalizerUtil.writeField(element, "RUNNER_OPTIONS", runnerOptions);
     }
 
     @Override
     public void readExternal(@NotNull Element element) throws InvalidDataException {
         super.readExternal(element);
-        bootstrapPath = JDOMExternalizerUtil.readField(element, "BOOTSTRAP_PATH");
         runnerOptions = JDOMExternalizerUtil.readField(element, "RUNNER_OPTIONS");
     }
 }

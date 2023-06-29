@@ -41,11 +41,10 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
 
     protected boolean setupConfigurationForPyClass(@NotNull VedroRunConfiguration configuration, @NotNull PyClass element) {
         VirtualFile file = element.getContainingFile().getVirtualFile();
-        Path bootstrapPath = findBootstrap(file, configuration.getProject().getBasePath(), configuration.getDefaultBoostrapName());
-        if (bootstrapPath == null) {
+        Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());
+        if (configFile == null) {
             Path workingDirectory = Paths.get(configuration.getWorkingDirectory());
-            Path defaultBootstrapPath = Paths.get(configuration.getDefaultBoostrapName());
-            updateConfiguration(configuration, workingDirectory, defaultBootstrapPath, file.getPath());
+            updateConfiguration(configuration, workingDirectory, file.getPath());
             return true;
         }
 
@@ -53,11 +52,11 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         if (clsName == null) {
             return false;
         }
-        Path boostrapDir  = bootstrapPath.getParent();
+        Path configDir  = configFile.getParent();
         Path filePath = Paths.get(file.getPath());
-        String target = boostrapDir.relativize(filePath).toString();
+        String target = configDir.relativize(filePath).toString();
 
-        updateConfiguration(configuration, boostrapDir, bootstrapPath, target + "::" + clsName);
+        updateConfiguration(configuration, configDir, target + "::" + clsName);
 
         return true;
     }
@@ -70,29 +69,27 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         }
 
         VirtualFile file = element.getContainingFile().getVirtualFile();
-        Path bootstrapPath = findBootstrap(file, configuration.getProject().getBasePath(), configuration.getDefaultBoostrapName());
-        if (bootstrapPath == null) {
+        Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());
+        if (configFile == null) {
             Path workingDirectory = Paths.get(configuration.getWorkingDirectory());
-            Path defaultBootstrapPath = Paths.get(configuration.getDefaultBoostrapName());
-            updateConfiguration(configuration, workingDirectory, defaultBootstrapPath, file.getPath());
+            updateConfiguration(configuration, workingDirectory, file.getPath());
             return true;
         }
 
-        Path boostrapDir  = bootstrapPath.getParent();
+        Path configDir  = configFile.getParent();
         Path filePath = Paths.get(file.getPath());
-        String target = boostrapDir.relativize(filePath).toString();
+        String target = configDir.relativize(filePath).toString();
 
-        updateConfiguration(configuration, boostrapDir, bootstrapPath, target + "::" + clsName + "#" + decoratorIndex);
+        updateConfiguration(configuration, configDir, target + "::" + clsName + "#" + decoratorIndex);
 
         return true;
     }
 
-    protected void updateConfiguration(@NotNull VedroRunConfiguration configuration, @NotNull Path workingDirectory, @NotNull Path bootstrapPath, @NotNull String target) {
+    protected void updateConfiguration(@NotNull VedroRunConfiguration configuration, @NotNull Path workingDirectory, @NotNull String target) {
         configuration.setWorkingDirectory(workingDirectory.toString());
-        configuration.setBootstrapPath(bootstrapPath.toString());
-
         configuration.setTarget(target);
-        configuration.setRunnerOptions("-r pycharm");
+
+        configuration.setRunnerOptions("-r rich pycharm --pycharm-no-output");
 
         configuration.setSuggestedName("vedro scenario");
         configuration.setActionName("vedro scenario");
@@ -110,20 +107,17 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
             return false;
         }
 
-        if (!configuration.getBootstrapPath().equals(tmpConf.getBootstrapPath())) {
-            return false;
-        }
         // Move to findExistingConfiguration
         configuration.setTarget(tmpConf.getTarget());
         return true;
     }
 
     @Nullable
-    protected Path findBootstrap(VirtualFile file, String projectPath, String boostrapName) {
+    protected Path findConfigFile(VirtualFile file, String projectPath, String configFileName) {
         if (file.isDirectory()) {
             VirtualFile[] children = file.getChildren();
             for (VirtualFile child : children) {
-                if (child.getName().equals(boostrapName)) {
+                if (child.getName().equals(configFileName)) {
                     return Paths.get(child.getPath());
                 }
             }
@@ -132,7 +126,7 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         if (parent == null || file.getPath().equals(projectPath)) {
             return null;
         }
-        return findBootstrap(parent, projectPath, boostrapName);
+        return findConfigFile(parent, projectPath, configFileName);
     }
 
     @Nullable
