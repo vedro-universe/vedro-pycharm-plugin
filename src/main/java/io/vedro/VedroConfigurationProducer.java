@@ -43,8 +43,10 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         VirtualFile file = element.getContainingFile().getVirtualFile();
         Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());
         if (configFile == null) {
-            Path workingDirectory = Paths.get(configuration.getWorkingDirectory());
-            updateConfiguration(configuration, workingDirectory, file.getPath());
+            Path workingDirectory = Paths.get(configuration.getWorkingDirectorySafe());
+            Path filePath = Paths.get(file.getPath());
+            String target = workingDirectory.relativize(filePath).toString();
+            updateConfiguration(configuration, workingDirectory, target);
             return true;
         }
 
@@ -71,8 +73,10 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         VirtualFile file = element.getContainingFile().getVirtualFile();
         Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());
         if (configFile == null) {
-            Path workingDirectory = Paths.get(configuration.getWorkingDirectory());
-            updateConfiguration(configuration, workingDirectory, file.getPath());
+            Path workingDirectory = Paths.get(configuration.getWorkingDirectorySafe());
+            Path filePath = Paths.get(file.getPath());
+            String target = workingDirectory.relativize(filePath).toString();
+            updateConfiguration(configuration, workingDirectory, target);
             return true;
         }
 
