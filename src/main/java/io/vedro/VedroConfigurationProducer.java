@@ -40,25 +40,18 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
     }
 
     protected boolean setupConfigurationForPyClass(@NotNull VedroRunConfiguration configuration, @NotNull PyClass element) {
-        VirtualFile file = element.getContainingFile().getVirtualFile();
-        Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());
-        if (configFile == null) {
-            Path workingDirectory = Paths.get(configuration.getWorkingDirectorySafe());
-            Path filePath = Paths.get(file.getPath());
-            String target = workingDirectory.relativize(filePath).toString();
-            updateConfiguration(configuration, workingDirectory, target);
-            return true;
-        }
-
         String clsName = element.getName();
         if (clsName == null) {
             return false;
         }
-        Path configDir  = configFile.getParent();
+        VirtualFile file = element.getContainingFile().getVirtualFile();
         Path filePath = Paths.get(file.getPath());
-        String target = configDir.relativize(filePath).toString();
 
-        updateConfiguration(configuration, configDir, target + "::" + clsName);
+        Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());        
+        Path workingDir = (configFile != null) ? configFile.getParent() : Paths.get(configuration.getWorkingDirectorySafe());
+        String target = workingDir.relativize(filePath).toString();
+
+        updateConfiguration(configuration, workingDir, target + "::" + clsName);
 
         return true;
     }
@@ -71,20 +64,13 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         }
 
         VirtualFile file = element.getContainingFile().getVirtualFile();
-        Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());
-        if (configFile == null) {
-            Path workingDirectory = Paths.get(configuration.getWorkingDirectorySafe());
-            Path filePath = Paths.get(file.getPath());
-            String target = workingDirectory.relativize(filePath).toString();
-            updateConfiguration(configuration, workingDirectory, target);
-            return true;
-        }
-
-        Path configDir  = configFile.getParent();
         Path filePath = Paths.get(file.getPath());
-        String target = configDir.relativize(filePath).toString();
 
-        updateConfiguration(configuration, configDir, target + "::" + clsName + "#" + decoratorIndex);
+        Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());
+        Path workingDir = (configFile != null) ? configFile.getParent() : Paths.get(configuration.getWorkingDirectorySafe());
+        String target = workingDir.relativize(filePath).toString();
+
+        updateConfiguration(configuration, workingDir, target + "::" + clsName + "#" + decoratorIndex);
 
         return true;
     }
