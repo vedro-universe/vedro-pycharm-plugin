@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 public class VedroConfigurationFactory extends PythonConfigurationFactoryBase {
     public static ConfigurationFactory INSTANCE;
 
-    public static VedroConfigurationFactory getInstance() {
+    public static ConfigurationFactory getInstance() {
         if(INSTANCE == null) {
             INSTANCE = new VedroConfigurationFactory(VedroConfigurationType.INSTANCE);
         }
