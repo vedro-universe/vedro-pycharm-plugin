@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 public class VedroConfigurationProducer extends LazyRunConfigurationProducer<VedroRunConfiguration> {
     @Override
     public @NotNull ConfigurationFactory getConfigurationFactory() {
-        return VedroConfigurationFactory.INSTANCE;
+        return VedroConfigurationFactory.getInstance();
     }
 
     @Override

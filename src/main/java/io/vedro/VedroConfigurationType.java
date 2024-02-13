@@ -17,6 +17,6 @@ public class VedroConfigurationType extends ConfigurationTypeBase {
     @NotNull
     @Override
     public ConfigurationFactory[] getConfigurationFactories() {
-        return new ConfigurationFactory[]{new VedroConfigurationFactory(this)};
+        return new ConfigurationFactory[]{VedroConfigurationFactory.getInstance()};
     }
 }

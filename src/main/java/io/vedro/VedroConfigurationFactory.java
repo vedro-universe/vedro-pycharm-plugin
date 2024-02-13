@@ -9,7 +9,14 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 public class VedroConfigurationFactory extends PythonConfigurationFactoryBase {
-    public static ConfigurationFactory INSTANCE = new VedroConfigurationFactory(VedroConfigurationType.INSTANCE);
+    public static ConfigurationFactory INSTANCE;
+
+    public static ConfigurationFactory getInstance() {
+        if(INSTANCE == null) {
+            INSTANCE = new VedroConfigurationFactory(VedroConfigurationType.INSTANCE);
+        }
+        return INSTANCE;
+    }
 
     public VedroConfigurationFactory(@NotNull ConfigurationType configurationType) {
         super(configurationType);
