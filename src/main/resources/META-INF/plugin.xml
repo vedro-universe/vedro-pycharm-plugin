@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>vedro</id>
     <name>Vedro</name>
-    <version>0.2.3</version>
+    <version>0.2.4</version>
     <vendor email="tsv1@fastmail.com" url="https://github.com/tsv1">Nikita Tsvetkov</vendor>
 
     <description><![CDATA[
