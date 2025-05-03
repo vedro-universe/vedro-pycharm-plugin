@@ -17,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+
 public class VedroConfigurationProducer extends LazyRunConfigurationProducer<VedroRunConfiguration> {
     @Override
     public @NotNull ConfigurationFactory getConfigurationFactory() {
@@ -35,6 +36,9 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         }
         if (element instanceof PyDecorator) {
             return setupConfigurationForPyDecorator(configuration, (PyDecorator) element);
+        }
+        if (element instanceof PyFunction) {
+            return setupConfigurationForPyFunction(configuration, (PyFunction) element);
         }
         return false;
     }
@@ -71,6 +75,25 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         String target = workingDir.relativize(filePath).toString();
 
         updateConfiguration(configuration, workingDir, target + "::" + clsName + "#" + decoratorIndex);
+
+        return true;
+    }
+
+    protected boolean setupConfigurationForPyFunction(@NotNull VedroRunConfiguration configuration, @NotNull PyFunction element) {
+        String functionName = element.getName();
+        if (functionName == null) {
+            return false;
+        }
+
+        VirtualFile file = element.getContainingFile().getVirtualFile();
+        Path filePath = Paths.get(file.getPath());
+
+        Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());
+        Path workingDir = (configFile != null) ? configFile.getParent() : Paths.get(configuration.getWorkingDirectorySafe());
+        String target = workingDir.relativize(filePath).toString();
+
+        // Use the same format as class-based scenarios but with function name
+        updateConfiguration(configuration, workingDir, target + "::Scenario_" + functionName);
 
         return true;
     }

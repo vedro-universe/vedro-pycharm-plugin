@@ -12,7 +12,7 @@ public class VedroConfigurationFactory extends PythonConfigurationFactoryBase {
     public static ConfigurationFactory INSTANCE;
 
     public static ConfigurationFactory getInstance() {
-        if(INSTANCE == null) {
+        if (INSTANCE == null) {
             INSTANCE = new VedroConfigurationFactory(VedroConfigurationType.INSTANCE);
         }
         return INSTANCE;
