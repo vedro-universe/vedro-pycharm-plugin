@@ -29,6 +29,7 @@ import com.jetbrains.python.psi.PyTargetExpression;
 
 public class VedroSubjectLineMarkerContributor extends RunLineMarkerContributor {
     private static final Icon ICON_RENAME_FILE = AllIcons.Actions.Edit;
+
     private static final String SCENARIO_BASE_CLASS = "vedro._scenario.Scenario";
     private static final String SUBJECT_VARIABLE_NAME = "subject";
 
@@ -73,24 +74,22 @@ public class VedroSubjectLineMarkerContributor extends RunLineMarkerContributor 
 
     @Nullable
     private SubjectInfo extractSubjectInfo(PyAssignmentStatement assignment) {
-        // Check if we're assigning to a variable named "subject"
         PyExpression[] targets = assignment.getTargets();
         if (targets.length == 0 || !(targets[0] instanceof PyTargetExpression)) {
             return null;
         }
 
         PyTargetExpression target = (PyTargetExpression) targets[0];
-        if (!SUBJECT_VARIABLE_NAME.equals(target.getName())) {
+        String targetName = String.valueOf(target.getName());
+        if (!targetName.equals(SUBJECT_VARIABLE_NAME)) {
             return null;
         }
 
-        // Check if we're inside a Vedro scenario class
         PyClass containingClass = PsiTreeUtil.getParentOfType(assignment, PyClass.class);
         if (containingClass == null || !containingClass.isSubclass(SCENARIO_BASE_CLASS, null)) {
             return null;
         }
 
-        // Get the value being assigned to "subject"
         PyExpression value = assignment.getAssignedValue();
         if (!(value instanceof PyStringLiteralExpression)) {
             return null;
