@@ -133,7 +133,25 @@ public class VedroSubjectLineMarkerContributor extends RunLineMarkerContributor 
     }
 
     private String convertSubjectToFilename(String subject) {
-        return subject.toLowerCase().replaceAll("\\s+", "_") + ".py";
+        // First convert to lowercase
+        String lowered = subject.toLowerCase();
+        
+        // Replace spaces with underscores
+        String spacesReplaced = lowered.replaceAll("\\s+", "_");
+
+        // Keep only allowed characters:
+        // - Unicode letters from any alphabet
+        // - Digits
+        // - Underscores, dashes, parentheses
+        String filtered = spacesReplaced.replaceAll("[^\\p{L}\\p{N}_\\-\\(\\)]", "");
+
+        // Handle potential edge case of empty filename after filtering
+        if (filtered.isEmpty()) {
+            return "untitled.py";
+        }
+
+        // Add .py extension
+        return filtered + ".py";
     }
 
     private static class SubjectInfo {
