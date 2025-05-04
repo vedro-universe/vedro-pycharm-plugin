@@ -47,26 +47,40 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
     }
 
     protected boolean setupConfiguration(@NotNull VedroRunConfiguration configuration, @NotNull PsiElement element) {
-        if (element instanceof PyFile) {
-            return setupConfigurationForPyFile(configuration, (PyFile) element);
-        }
-        if (element instanceof PsiDirectory) {
-            return setupConfigurationForDirectory(configuration, (PsiDirectory) element);
-        }
-    
-        if (element instanceof PyClass && VedroTestUtils.isScenarioClass((PyClass) element)) {
-            return setupConfigurationForPyClass(configuration, (PyClass) element);
-        }
-        if (element instanceof PyDecorator && VedroTestUtils.isParamsDecorator((PyDecorator) element)) {
-            return setupConfigurationForPyDecorator(configuration, (PyDecorator) element);
+        if (element.getFirstChild() == null) {
+            PsiElement parent = element.getParent();
+
+            if (parent instanceof PyClass cls
+                && element.equals(cls.getNameIdentifier())
+                && VedroTestUtils.isScenarioClass(cls)) {
+                return setupConfigurationForPyClass(configuration, cls);
+            }
+
+            if (parent instanceof PyFunction fn
+                && element.equals(fn.getNameIdentifier())
+                && VedroTestUtils.isScenarioFunction(fn)) {
+                return setupConfigurationForPyFunction(configuration, fn);
+            }
+
+            return false;
         }
 
-        if (element instanceof PyFunction && VedroTestUtils.isScenarioFunction((PyFunction) element)) {
-            return setupConfigurationForPyFunction(configuration, (PyFunction) element);
+        if (element instanceof PyFile file) {
+            return setupConfigurationForPyFile(configuration, file);
         }
-        if (element instanceof PyCallExpression && VedroTestUtils.isParamsCall((PyCallExpression) element)) {
-            return setupConfigurationForParamsCall(configuration, (PyCallExpression) element);
+        if (element instanceof PsiDirectory dir) {
+            return setupConfigurationForDirectory(configuration, dir);
         }
+
+        if (element instanceof PyDecorator dec
+            && VedroTestUtils.isParamsDecorator(dec)) {
+            return setupConfigurationForPyDecorator(configuration, dec);
+        }
+        if (element instanceof PyCallExpression call
+            && VedroTestUtils.isParamsCall(call)) {
+            return setupConfigurationForParamsCall(configuration, call);
+        }
+
         return false;
     }
 

@@ -16,23 +16,35 @@ import com.jetbrains.python.psi.PyFunction;
 
 import io.vedro.util.VedroTestUtils;
 
-
 public class VedroRunLineMarkerContributor extends RunLineMarkerContributor{
     protected static Icon ICON_RUN_SCENARIO = AllIcons.RunConfigurations.TestState.Run;
     protected static Icon ICON_RUN_PARAMS = AllIcons.RunConfigurations.TestState.Run_run;
 
     @Override
     public @Nullable Info getInfo(@NotNull PsiElement element) {
-        if (element instanceof PyClass && VedroTestUtils.isScenarioClass((PyClass) element)) {
-            return new Info(ICON_RUN_SCENARIO, ExecutorAction.getActions(), null);
+        if (element.getFirstChild() == null) {
+            PsiElement parent = element.getParent();
+
+            if (parent instanceof PyClass cls
+                && element.equals(cls.getNameIdentifier())
+                && VedroTestUtils.isScenarioClass(cls)) {
+                return new Info(ICON_RUN_SCENARIO, ExecutorAction.getActions(), null);
+            }
+
+            if (parent instanceof PyFunction fn
+                && element.equals(fn.getNameIdentifier())
+                && VedroTestUtils.isScenarioFunction(fn)) {
+                return new Info(ICON_RUN_SCENARIO, ExecutorAction.getActions(), null);
+            }
+
+            return null;
         }
-        if (element instanceof PyDecorator && VedroTestUtils.isParamsDecorator((PyDecorator) element)) {
+        if (element instanceof PyDecorator dec
+            && VedroTestUtils.isParamsDecorator(dec)) {
             return new Info(ICON_RUN_PARAMS, ExecutorAction.getActions(), null);
         }
-        if (element instanceof PyFunction && VedroTestUtils.isScenarioFunction((PyFunction) element)) {
-            return new Info(ICON_RUN_SCENARIO, ExecutorAction.getActions(), null);
-        }
-        if (element instanceof PyCallExpression && VedroTestUtils.isParamsCall((PyCallExpression) element)) {
+        if (element instanceof PyCallExpression call
+            && VedroTestUtils.isParamsCall(call)) {
             return new Info(ICON_RUN_PARAMS, ExecutorAction.getActions(), null);
         }
         return null;
