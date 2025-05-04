@@ -2,7 +2,6 @@ package io.vedro;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,17 +18,10 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.python.psi.PyCallExpression;
 import com.jetbrains.python.psi.PyClass;
 import com.jetbrains.python.psi.PyDecorator;
-import com.jetbrains.python.psi.PyDecoratorList;
-import com.jetbrains.python.psi.PyExpression;
 import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyFunction;
-import com.jetbrains.python.psi.PyQualifiedNameOwner;
-import com.jetbrains.python.psi.PyReferenceExpression;
 
 public class VedroConfigurationProducer extends LazyRunConfigurationProducer<VedroRunConfiguration> {
-    private static final String SCENARIO_FN_DECORATOR = "vedro_fn._scenario_decorator.scenario";
-    private static final String PARAMS_DECORATOR = "vedro._params.params";
-
     @Override
     public @NotNull ConfigurationFactory getConfigurationFactory() {
         return VedroConfigurationFactory.getInstance();
@@ -57,18 +49,18 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         if (element instanceof PsiDirectory) {
             return setupConfigurationForDirectory(configuration, (PsiDirectory) element);
         }
-
-        if (element instanceof PyClass) {
+    
+        if (element instanceof PyClass && VedroTestUtils.isScenarioClass((PyClass) element)) {
             return setupConfigurationForPyClass(configuration, (PyClass) element);
         }
-        if (element instanceof PyDecorator) {
+        if (element instanceof PyDecorator && VedroTestUtils.isParamsDecorator((PyDecorator) element)) {
             return setupConfigurationForPyDecorator(configuration, (PyDecorator) element);
         }
 
-        if (element instanceof PyFunction) {
+        if (element instanceof PyFunction && VedroTestUtils.isScenarioFunction((PyFunction) element)) {
             return setupConfigurationForPyFunction(configuration, (PyFunction) element);
         }
-        if (element instanceof PyCallExpression) {
+        if (element instanceof PyCallExpression && VedroTestUtils.isParamsCall((PyCallExpression) element)) {
             return setupConfigurationForParamsCall(configuration, (PyCallExpression) element);
         }
         return false;
@@ -154,8 +146,8 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
     }
 
     protected boolean setupConfigurationForPyDecorator(@NotNull VedroRunConfiguration configuration, @NotNull PyDecorator element) {
-        String clsName = getClassName(element);
-        int decoratorIndex = getDecoratorIndex(element);
+        String clsName = VedroTestUtils.getClassName(element);
+        int decoratorIndex = VedroTestUtils.getParamsDecoratorIndex(element);
         if (clsName == null || decoratorIndex == -1) {
             return false;
         }
@@ -196,7 +188,7 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
             return false;
         }
 
-        int callIndex = getParamsCallIndex(call);
+        int callIndex = VedroTestUtils.getParamsCallIndex(call);
         if (callIndex == -1) {
             return false;
         }
@@ -261,86 +253,9 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         return findConfigFile(parent, projectPath, configFileName);
     }
 
-    @Nullable
-    protected String getClassName(@NotNull PyDecorator decorator) {
-        PyFunction function = decorator.getTarget();
-        if (function == null) {
-            return null;
-        }
-        PyClass cls = function.getContainingClass();
-        if (cls == null) {
-            return null;
-        }
-        return cls.getName();
-    }
-
-    protected int getDecoratorIndex(@NotNull PyDecorator decorator) {
-        PyFunction function = decorator.getTarget();
-        if (function == null) {
-            return -1;
-        }
-        PyDecoratorList decorators = function.getDecoratorList();
-        if (decorators == null) {
-            return -1;
-        }
-        int index = 1;
-        for (PyDecorator d : decorators.getDecorators()) {
-            if (hasQualifiedName(d.getCallee(), PARAMS_DECORATOR)) {
-                if (d.isEquivalentTo(decorator)) {
-                    return index;
-                }
-                index++;
-            }
-        }
-        return -1;
-    }
-
-    protected int getParamsCallIndex(@NotNull PyCallExpression call) {
-        PyFunction function = PsiTreeUtil.getParentOfType(call, PyFunction.class);
-        if (function == null) {
-            return -1;
-        }
-
-        PyDecoratorList decoratorList = function.getDecoratorList();
-        if (decoratorList == null) {
-            return -1;
-        }
-
-        for (PyDecorator decorator : decoratorList.getDecorators()) {
-            if (!hasQualifiedName(decorator.getCallee(), SCENARIO_FN_DECORATOR)) {
-                continue;
-            }
-
-            int index = 1;
-            Collection<PyCallExpression> allCalls = PsiTreeUtil.findChildrenOfType(decorator, PyCallExpression.class);
-            for (PyCallExpression currentCall : allCalls) {
-                if (hasQualifiedName(currentCall.getCallee(), PARAMS_DECORATOR)) {
-                    if (currentCall.isEquivalentTo(call)) {
-                        return index;
-                    }
-                    index++;
-                }
-            }
-        }
-
-        return -1;
-    }
-
     protected static @NotNull String getSuggestedName(@NotNull Project project, @NotNull Path workingDir) {
         Path projectRoot = Paths.get(project.getBasePath());
         String rel = projectRoot.relativize(workingDir).toString();
         return "Vedro scenarios in '" + (rel.isEmpty() ? "./" : rel) + "'";
-    }
-
-    private static boolean hasQualifiedName(@NotNull PyExpression ref, @NotNull String qualifiedName) {
-        if (!(ref instanceof PyReferenceExpression)) {
-            return false;
-        }
-        PsiElement resolved = ((PyReferenceExpression) ref).getReference().resolve();
-        if (!(resolved instanceof PyQualifiedNameOwner)) {
-            return false;
-        }
-        String name = ((PyQualifiedNameOwner) resolved).getQualifiedName();
-        return name != null && name.equals(qualifiedName);
     }
 }

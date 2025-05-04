@@ -26,12 +26,8 @@ import com.jetbrains.python.psi.PyExpression;
 import com.jetbrains.python.psi.PyStringLiteralExpression;
 import com.jetbrains.python.psi.PyTargetExpression;
 
-
 public class VedroSubjectLineMarkerContributor extends RunLineMarkerContributor {
     private static final Icon ICON_RENAME_FILE = AllIcons.Actions.Edit;
-
-    private static final String SCENARIO_BASE_CLASS = "vedro._scenario.Scenario";
-    private static final String SUBJECT_VARIABLE_NAME = "subject";
 
     @Override
     public @Nullable Info getInfo(@NotNull PsiElement element) {
@@ -81,12 +77,12 @@ public class VedroSubjectLineMarkerContributor extends RunLineMarkerContributor 
 
         PyTargetExpression target = (PyTargetExpression) targets[0];
         String targetName = String.valueOf(target.getName());
-        if (!targetName.equals(SUBJECT_VARIABLE_NAME)) {
+        if (!targetName.equals("subject")) {
             return null;
         }
 
         PyClass containingClass = PsiTreeUtil.getParentOfType(assignment, PyClass.class);
-        if (containingClass == null || !containingClass.isSubclass(SCENARIO_BASE_CLASS, null)) {
+        if (containingClass == null || !VedroTestUtils.isScenarioClass(containingClass)) {
             return null;
         }
 
