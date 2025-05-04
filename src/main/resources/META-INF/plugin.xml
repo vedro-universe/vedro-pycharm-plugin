@@ -6,8 +6,6 @@
 
     <description><![CDATA[
         <p>Plugin for <a href="https://vedro.io">Vedro</a> testing framework.</p>
-        <br />
-        <p>This plugin requires Vedro v1.8 or higher.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
@@ -17,8 +15,9 @@
     <idea-version since-build="222"/>
 
     <extensions defaultExtensionNs="com.intellij">
-        <configurationType implementation="io.vedro.VedroConfigurationType" />
-        <runConfigurationProducer implementation="io.vedro.VedroConfigurationProducer" />
-        <runLineMarkerContributor implementationClass="io.vedro.VedroRunLineMarkerContributor" language="Python" />
+        <configurationType implementation="io.vedro.config.VedroConfigurationType" />
+        <runConfigurationProducer implementation="io.vedro.execution.VedroConfigurationProducer" />
+        <runLineMarkerContributor implementationClass="io.vedro.ui.markers.VedroRunLineMarkerContributor" language="Python" />
+        <runLineMarkerContributor implementationClass="io.vedro.ui.markers.VedroSubjectLineMarkerContributor" language="Python" />
     </extensions>
 </idea-plugin>

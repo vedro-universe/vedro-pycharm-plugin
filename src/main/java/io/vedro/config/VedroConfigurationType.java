@@ -1,10 +1,12 @@
-package io.vedro;
+package io.vedro.config;
+
+import org.jetbrains.annotations.NotNull;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
-import org.jetbrains.annotations.NotNull;
 
+import io.vedro.ui.icons.PluginIcons;
 
 public class VedroConfigurationType extends ConfigurationTypeBase {
     public static ConfigurationType INSTANCE = new VedroConfigurationType();
