@@ -8,8 +8,8 @@ repositories {
 }
 
 apply plugin: "java"
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
+sourceCompatibility = 1.17
+targetCompatibility = 1.17
 
 // Docs https://github.com/JetBrains/gradle-intellij-plugin
 apply plugin: "org.jetbrains.intellij"

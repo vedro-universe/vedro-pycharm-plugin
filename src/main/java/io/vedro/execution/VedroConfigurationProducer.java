@@ -1,4 +1,4 @@
-package io.vedro;
+package io.vedro.execution;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,6 +20,10 @@ import com.jetbrains.python.psi.PyClass;
 import com.jetbrains.python.psi.PyDecorator;
 import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyFunction;
+
+import io.vedro.config.VedroConfigurationFactory;
+import io.vedro.config.VedroRunConfiguration;
+import io.vedro.util.VedroTestUtils;
 
 public class VedroConfigurationProducer extends LazyRunConfigurationProducer<VedroRunConfiguration> {
     @Override

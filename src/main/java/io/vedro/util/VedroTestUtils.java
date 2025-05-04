@@ -1,4 +1,4 @@
-package io.vedro;
+package io.vedro.util;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

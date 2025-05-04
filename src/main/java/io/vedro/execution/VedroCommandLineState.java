@@ -1,4 +1,4 @@
-package io.vedro;
+package io.vedro.execution;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +23,8 @@ import com.jetbrains.python.run.PythonModuleExecution;
 import com.jetbrains.python.run.PythonScriptTargetedCommandLineBuilder;
 import com.jetbrains.python.run.target.HelpersAwareTargetEnvironmentRequest;
 import com.jetbrains.python.testing.PythonTestCommandLineStateBase;
+
+import io.vedro.config.VedroRunConfiguration;
 
 public class VedroCommandLineState extends PythonTestCommandLineStateBase<VedroRunConfiguration> {
     public VedroCommandLineState(VedroRunConfiguration configuration, ExecutionEnvironment environment) {

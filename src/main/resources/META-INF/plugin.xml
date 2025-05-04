@@ -15,9 +15,9 @@
     <idea-version since-build="222"/>
 
     <extensions defaultExtensionNs="com.intellij">
-        <configurationType implementation="io.vedro.VedroConfigurationType" />
-        <runConfigurationProducer implementation="io.vedro.VedroConfigurationProducer" />
-        <runLineMarkerContributor implementationClass="io.vedro.VedroRunLineMarkerContributor" language="Python" />
-        <runLineMarkerContributor implementationClass="io.vedro.VedroSubjectLineMarkerContributor" language="Python" />
+        <configurationType implementation="io.vedro.config.VedroConfigurationType" />
+        <runConfigurationProducer implementation="io.vedro.execution.VedroConfigurationProducer" />
+        <runLineMarkerContributor implementationClass="io.vedro.ui.markers.VedroRunLineMarkerContributor" language="Python" />
+        <runLineMarkerContributor implementationClass="io.vedro.ui.markers.VedroSubjectLineMarkerContributor" language="Python" />
     </extensions>
 </idea-plugin>

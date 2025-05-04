@@ -1,4 +1,8 @@
-package io.vedro;
+package io.vedro.config;
+
+import org.jdom.Element;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
@@ -12,9 +16,9 @@ import com.intellij.openapi.util.JDOMExternalizerUtil;
 import com.intellij.openapi.util.NlsActions;
 import com.intellij.openapi.util.WriteExternalException;
 import com.jetbrains.python.testing.AbstractPythonTestRunConfiguration;
-import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import io.vedro.execution.VedroCommandLineState;
+import io.vedro.ui.editor.VedroSettingsEditorForm;
 
 public class VedroRunConfiguration extends AbstractPythonTestRunConfiguration<VedroRunConfiguration> {
     protected String target = "";

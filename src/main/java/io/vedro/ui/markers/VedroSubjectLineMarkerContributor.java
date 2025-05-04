@@ -1,4 +1,4 @@
-package io.vedro;
+package io.vedro.ui.markers;
 
 import java.util.function.Function;
 
@@ -25,6 +25,8 @@ import com.jetbrains.python.psi.PyClass;
 import com.jetbrains.python.psi.PyExpression;
 import com.jetbrains.python.psi.PyStringLiteralExpression;
 import com.jetbrains.python.psi.PyTargetExpression;
+
+import io.vedro.util.VedroTestUtils;
 
 public class VedroSubjectLineMarkerContributor extends RunLineMarkerContributor {
     private static final Icon ICON_RENAME_FILE = AllIcons.Actions.Edit;

@@ -1,4 +1,4 @@
-package io.vedro;
+package io.vedro.ui.markers;
 
 import javax.swing.Icon;
 
@@ -13,6 +13,8 @@ import com.jetbrains.python.psi.PyCallExpression;
 import com.jetbrains.python.psi.PyClass;
 import com.jetbrains.python.psi.PyDecorator;
 import com.jetbrains.python.psi.PyFunction;
+
+import io.vedro.util.VedroTestUtils;
 
 
 public class VedroRunLineMarkerContributor extends RunLineMarkerContributor{
