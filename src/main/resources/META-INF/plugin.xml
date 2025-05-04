@@ -5,7 +5,7 @@
     <vendor email="tsv1@fastmail.com" url="https://github.com/tsv1">Nikita Tsvetkov</vendor>
 
     <description><![CDATA[
-        <p>Plugin for <a href="https://vedro.io">Vedro</a> testing framework.</p>
+        <p>Plugin for <a href="https://vedro.io">Vedro</a> testing framework. Enables running Vedro scenarios directly from the IDE with full test runner integration.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
