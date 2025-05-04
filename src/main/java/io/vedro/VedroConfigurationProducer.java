@@ -88,9 +88,7 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
 
         updateConfiguration(configuration, workingDir, target);
 
-        String suggestedName = getSuggestedName(configuration.getProject(), workingDir);
-        configuration.setSuggestedName(suggestedName);
-        configuration.setActionName("Vedro tests in " + dir.getName());
+        // configuration.setActionName("Vedro scenarios in " + dir.getName() + "/");
 
         return true;
     }
@@ -109,9 +107,7 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
 
         updateConfiguration(configuration, workingDir, target);
 
-        String suggestedName = getSuggestedName(configuration.getProject(), workingDir);
-        configuration.setSuggestedName(suggestedName);
-        configuration.setActionName("Vedro tests in " + file.getName());
+        // configuration.setActionName("Vedro scenarios in " + file.getName());
 
         return true;
     }
@@ -199,8 +195,8 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
 
         configuration.setRunnerOptions("-r rich pycharm --pycharm-no-output");
 
-        configuration.setSuggestedName("vedro scenario");
-        configuration.setActionName("vedro scenario");
+        configuration.setSuggestedName(getSuggestedName(configuration.getProject(), workingDirectory));
+        configuration.setActionName("Vedro scenario(s)");
     }
 
     @Override
@@ -309,7 +305,7 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
     protected static @NotNull String getSuggestedName(@NotNull Project project, @NotNull Path workingDir) {
         Path projectRoot = Paths.get(project.getBasePath());
         String rel = projectRoot.relativize(workingDir).toString();
-        return "Vedro tests in '" + (rel.isEmpty() ? "./" : rel) + "'";
+        return "Vedro scenarios in '" + (rel.isEmpty() ? "./" : rel) + "'";
     }
 
     private static boolean hasQualifiedName(@NotNull PyExpression ref, @NotNull String qualifiedName) {
