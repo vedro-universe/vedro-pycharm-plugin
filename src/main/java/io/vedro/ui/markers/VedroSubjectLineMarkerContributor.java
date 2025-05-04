@@ -33,11 +33,23 @@ public class VedroSubjectLineMarkerContributor extends RunLineMarkerContributor 
 
     @Override
     public @Nullable Info getInfo(@NotNull PsiElement element) {
-        if (!(element instanceof PyAssignmentStatement)) {
+        if (element.getFirstChild() != null) {
             return null;
         }
 
-        SubjectInfo subjectInfo = extractSubjectInfo((PyAssignmentStatement) element);
+        PsiElement parent = element.getParent();
+        if (!(parent instanceof PyTargetExpression target) ||
+            !element.equals(target.getNameIdentifier()) ||
+            !"subject".equals(target.getName())) {
+            return null;
+        }
+
+        PyAssignmentStatement assignment = PsiTreeUtil.getParentOfType(target, PyAssignmentStatement.class);
+        if (assignment == null) {
+            return null;
+        }
+
+        SubjectInfo subjectInfo = extractSubjectInfo(assignment);
         if (subjectInfo == null) {
             return null;
         }
@@ -59,7 +71,11 @@ public class VedroSubjectLineMarkerContributor extends RunLineMarkerContributor 
     }
 
     private AnAction createRenameAction(SubjectInfo subjectInfo) {
-        return new AnAction() {
+        return new AnAction(
+            "Rename file to match subject",
+            "Rename the Python file to match the scenario’s subject string",
+            ICON_RENAME_FILE
+        ) {
             @Override
             public void actionPerformed(@NotNull AnActionEvent e) {
                 Project project = e.getProject();
@@ -72,17 +88,6 @@ public class VedroSubjectLineMarkerContributor extends RunLineMarkerContributor 
 
     @Nullable
     private SubjectInfo extractSubjectInfo(PyAssignmentStatement assignment) {
-        PyExpression[] targets = assignment.getTargets();
-        if (targets.length == 0 || !(targets[0] instanceof PyTargetExpression)) {
-            return null;
-        }
-
-        PyTargetExpression target = (PyTargetExpression) targets[0];
-        String targetName = String.valueOf(target.getName());
-        if (!targetName.equals("subject")) {
-            return null;
-        }
-
         PyClass containingClass = PsiTreeUtil.getParentOfType(assignment, PyClass.class);
         if (containingClass == null || !VedroTestUtils.isScenarioClass(containingClass)) {
             return null;
@@ -130,25 +135,11 @@ public class VedroSubjectLineMarkerContributor extends RunLineMarkerContributor 
     }
 
     private String convertSubjectToFilename(String subject) {
-        // First convert to lowercase
-        String lowered = subject.toLowerCase();
-        
-        // Replace spaces with underscores
-        String spacesReplaced = lowered.replaceAll("\\s+", "_");
-
-        // Keep only allowed characters:
-        // - Unicode letters from any alphabet
-        // - Digits
-        // - Underscores, dashes, parentheses
-        String filtered = spacesReplaced.replaceAll("[^\\p{L}\\p{N}_\\-\\(\\)]", "");
-
-        // Handle potential edge case of empty filename after filtering
-        if (filtered.isEmpty()) {
-            return "untitled.py";
-        }
-
-        // Add .py extension
-        return filtered + ".py";
+        String filtered = subject
+            .toLowerCase()
+            .replaceAll("\\s+", "_")
+            .replaceAll("[^\\p{L}\\p{N}_\\-\\(\\)]", "");
+        return filtered.isEmpty() ? "untitled.py" : (filtered + ".py");
     }
 
     private static class SubjectInfo {
