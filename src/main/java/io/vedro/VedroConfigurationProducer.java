@@ -74,40 +74,64 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         return false;
     }
 
-    protected boolean setupConfigurationForDirectory(@NotNull VedroRunConfiguration configuration, @NotNull PsiDirectory element) {
-        VirtualFile dir = element.getVirtualFile();
-        if (dir == null) {
-            return false;
-        }
-        
-        Path dirPath = Paths.get(dir.getPath());
-
-        Path configFile = findConfigFile(dir, configuration.getProject().getBasePath(), configuration.getConfigFileName());
-        Path workingDir = (configFile != null) ? configFile.getParent() : Paths.get(configuration.getWorkingDirectorySafe());
-        String target = workingDir.relativize(dirPath).toString();
-
-        updateConfiguration(configuration, workingDir, target);
-
-        // configuration.setActionName("Vedro scenarios in " + dir.getName() + "/");
-
-        return true;
-    }
-
     protected boolean setupConfigurationForPyFile(@NotNull VedroRunConfiguration configuration, @NotNull PyFile element) {
         VirtualFile file = element.getVirtualFile();
         if (file == null) {
             return false;
         }
-
         Path filePath = Paths.get(file.getPath());
 
-        Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());        
-        Path workingDir = (configFile != null) ? configFile.getParent() : Paths.get(configuration.getWorkingDirectorySafe());
-        String target = workingDir.relativize(filePath).toString();
+        Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());
+        if (configFile == null) {
+            return false;
+        }
 
-        updateConfiguration(configuration, workingDir, target);
+        if (file.getName().equals(configuration.getConfigFileName())) {
+            return false;
+        }
 
+        Path configDir = configFile.getParent();
+        if (!filePath.startsWith(configDir)) {
+            return false; // File is not inside the config directory
+        }
+
+        String target = configDir.relativize(filePath).toString();
+        updateConfiguration(configuration, configDir, target);
+
+        // This sets custom text for the action in the right-click context menu
+        // Currently commented out as we're using a generic name in updateConfiguration()
+        // Uncomment this and remove the setActionName call in updateConfiguration()
+        // once we implement configuration templates for better customization
         // configuration.setActionName("Vedro scenarios in " + file.getName());
+
+        return true;
+    }
+
+    protected boolean setupConfigurationForDirectory(@NotNull VedroRunConfiguration configuration, @NotNull PsiDirectory element) {
+        VirtualFile dir = element.getVirtualFile();
+        if (dir == null) {
+            return false;
+        }
+        Path dirPath = Paths.get(dir.getPath());
+
+        Path configFile = findConfigFile(dir, configuration.getProject().getBasePath(), configuration.getConfigFileName());
+        if (configFile == null) {
+            return false;
+        }
+
+        Path configDir = configFile.getParent();
+        if (!dirPath.startsWith(configDir)) {
+            return false; // Directory is not inside or equal to config directory
+        }
+
+        String target = configDir.relativize(dirPath).toString();
+        updateConfiguration(configuration, configDir, target);
+
+        // This sets custom text for the action in the right-click context menu
+        // Currently commented out as we're using a generic name in updateConfiguration()
+        // Uncomment this and remove the setActionName call in updateConfiguration()
+        // once we implement configuration templates for better customization
+        // configuration.setActionName("Vedro scenarios in " + dir.getName() + "/");
 
         return true;
     }
