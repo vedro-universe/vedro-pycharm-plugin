@@ -7,12 +7,13 @@ import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.intellij.execution.Location;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.LazyRunConfigurationProducer;
 import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.python.psi.PyCallExpression;
@@ -20,10 +21,10 @@ import com.jetbrains.python.psi.PyClass;
 import com.jetbrains.python.psi.PyDecorator;
 import com.jetbrains.python.psi.PyDecoratorList;
 import com.jetbrains.python.psi.PyExpression;
+import com.jetbrains.python.psi.PyFile;
 import com.jetbrains.python.psi.PyFunction;
 import com.jetbrains.python.psi.PyQualifiedNameOwner;
 import com.jetbrains.python.psi.PyReferenceExpression;
-
 
 public class VedroConfigurationProducer extends LazyRunConfigurationProducer<VedroRunConfiguration> {
     private static final String SCENARIO_FN_DECORATOR = "vedro_fn._scenario_decorator.scenario";
@@ -36,17 +37,34 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
 
     @Override
     protected boolean setupConfigurationFromContext(@NotNull VedroRunConfiguration configuration, @NotNull ConfigurationContext context, @NotNull Ref<PsiElement> sourceElement) {
-        PsiElement element = sourceElement.get();
-        return setupConfiguration(configuration, element);
+        PsiElement psi = context.getPsiLocation();
+        if (psi == null) {
+            return false;
+        }
+
+        if (!setupConfiguration(configuration, psi)) {
+            return false;
+        }
+
+        sourceElement.set(psi);
+        return true;
     }
 
     protected boolean setupConfiguration(@NotNull VedroRunConfiguration configuration, @NotNull PsiElement element) {
+        if (element instanceof PyFile) {
+            return setupConfigurationForPyFile(configuration, (PyFile) element);
+        }
+        if (element instanceof PsiDirectory) {
+            return setupConfigurationForDirectory(configuration, (PsiDirectory) element);
+        }
+
         if (element instanceof PyClass) {
             return setupConfigurationForPyClass(configuration, (PyClass) element);
         }
         if (element instanceof PyDecorator) {
             return setupConfigurationForPyDecorator(configuration, (PyDecorator) element);
         }
+
         if (element instanceof PyFunction) {
             return setupConfigurationForPyFunction(configuration, (PyFunction) element);
         }
@@ -54,6 +72,48 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
             return setupConfigurationForParamsCall(configuration, (PyCallExpression) element);
         }
         return false;
+    }
+
+    protected boolean setupConfigurationForDirectory(@NotNull VedroRunConfiguration configuration, @NotNull PsiDirectory element) {
+        VirtualFile dir = element.getVirtualFile();
+        if (dir == null) {
+            return false;
+        }
+        
+        Path dirPath = Paths.get(dir.getPath());
+
+        Path configFile = findConfigFile(dir, configuration.getProject().getBasePath(), configuration.getConfigFileName());
+        Path workingDir = (configFile != null) ? configFile.getParent() : Paths.get(configuration.getWorkingDirectorySafe());
+        String target = workingDir.relativize(dirPath).toString();
+
+        updateConfiguration(configuration, workingDir, target);
+
+        String suggestedName = getSuggestedName(configuration.getProject(), workingDir);
+        configuration.setSuggestedName(suggestedName);
+        configuration.setActionName("Vedro tests in " + dir.getName());
+
+        return true;
+    }
+
+    protected boolean setupConfigurationForPyFile(@NotNull VedroRunConfiguration configuration, @NotNull PyFile element) {
+        VirtualFile file = element.getVirtualFile();
+        if (file == null) {
+            return false;
+        }
+
+        Path filePath = Paths.get(file.getPath());
+
+        Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());        
+        Path workingDir = (configFile != null) ? configFile.getParent() : Paths.get(configuration.getWorkingDirectorySafe());
+        String target = workingDir.relativize(filePath).toString();
+
+        updateConfiguration(configuration, workingDir, target);
+
+        String suggestedName = getSuggestedName(configuration.getProject(), workingDir);
+        configuration.setSuggestedName(suggestedName);
+        configuration.setActionName("Vedro tests in " + file.getName());
+
+        return true;
     }
 
     protected boolean setupConfigurationForPyClass(@NotNull VedroRunConfiguration configuration, @NotNull PyClass element) {
@@ -145,13 +205,17 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
 
     @Override
     public boolean isConfigurationFromContext(@NotNull VedroRunConfiguration configuration, @NotNull ConfigurationContext context) {
-        Location<?> location = context.getLocation();
-        if (location == null) {
+        PsiElement psi = context.getPsiLocation();
+        if (psi == null) {
             return false;
         }
-        PsiElement element = location.getPsiElement();
+
         VedroRunConfiguration tmpConf = new VedroRunConfiguration(configuration.getProject(), configuration.getFactory());
-        if (!setupConfiguration(tmpConf, element)) {
+        if (!setupConfiguration(tmpConf, psi)) {
+            return false;
+        }
+
+        if (!configuration.getWorkingDirectory().equals(tmpConf.getWorkingDirectory())) {
             return false;
         }
 
@@ -240,6 +304,12 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         }
 
         return -1;
+    }
+
+    protected static @NotNull String getSuggestedName(@NotNull Project project, @NotNull Path workingDir) {
+        Path projectRoot = Paths.get(project.getBasePath());
+        String rel = projectRoot.relativize(workingDir).toString();
+        return "Vedro tests in '" + (rel.isEmpty() ? "./" : rel) + "'";
     }
 
     private static boolean hasQualifiedName(@NotNull PyExpression ref, @NotNull String qualifiedName) {
