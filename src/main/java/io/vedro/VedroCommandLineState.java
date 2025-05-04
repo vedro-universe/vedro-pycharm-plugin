@@ -1,5 +1,11 @@
 package io.vedro;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.intellij.execution.DefaultExecutionResult;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
@@ -15,11 +21,6 @@ import com.jetbrains.python.run.PythonModuleExecution;
 import com.jetbrains.python.run.PythonScriptTargetedCommandLineBuilder;
 import com.jetbrains.python.run.target.HelpersAwareTargetEnvironmentRequest;
 import com.jetbrains.python.testing.PythonTestCommandLineStateBase;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class VedroCommandLineState extends PythonTestCommandLineStateBase<VedroRunConfiguration> {
     public VedroCommandLineState(VedroRunConfiguration configuration, ExecutionEnvironment environment) {
@@ -40,7 +41,10 @@ public class VedroCommandLineState extends PythonTestCommandLineStateBase<VedroR
         moduleExecution.setModuleName("vedro");
         moduleExecution.addParameter("run");
 
-        moduleExecution.addParameter(myConfiguration.getTarget());
+        String target = myConfiguration.getTarget();
+        if (!target.isEmpty()) {
+            moduleExecution.addParameter(target);
+        }
 
         List<String> parameters = ProgramParametersConfigurator.expandMacrosAndParseParameters(myConfiguration.getRunnerOptions());
         moduleExecution.addParameters(parameters);
