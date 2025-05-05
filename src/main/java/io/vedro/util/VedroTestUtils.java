@@ -157,7 +157,7 @@ public class VedroTestUtils {
         return -1;
     }
 
-    public static boolean hasQualifiedName(@NotNull PyExpression ref, @NotNull String qualifiedName) {
+    public static boolean hasQualifiedName(PyExpression ref, @NotNull String qualifiedName) {
         if (!(ref instanceof PyReferenceExpression)) {
             return false;
         }
