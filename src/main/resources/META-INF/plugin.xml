@@ -6,6 +6,7 @@
 
     <description><![CDATA[
         <p>Plugin for <a href="https://vedro.io">Vedro</a> testing framework. Enables running Vedro scenarios directly from the IDE with full test runner integration.</p>
+        <p>See the <a href="https://vedro.io/docs/integrations/pycharm-plugin">official documentation</a> for more details.</p>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
