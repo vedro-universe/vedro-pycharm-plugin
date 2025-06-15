@@ -16,7 +16,7 @@ import com.jetbrains.python.psi.PyReferenceExpression;
 
 public class VedroTestUtils {
     public static final String SCENARIO_BASE_CLASS = "vedro._scenario.Scenario";
-    public static final String SCENARIO_FN_DECORATOR = "vedro_fn._scenario_decorator.scenario";
+    public static final String SCENARIO_FN_DECORATOR = "vedro.plugins.functioner._scenario_decorator.scenario";
     public static final String PARAMS_DECORATOR = "vedro._params.params";
 
     /**
