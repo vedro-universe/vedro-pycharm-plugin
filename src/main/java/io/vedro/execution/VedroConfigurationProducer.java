@@ -195,7 +195,7 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         Path workingDir = (configFile != null) ? configFile.getParent() : Paths.get(configuration.getWorkingDirectorySafe());
         String target = workingDir.relativize(filePath).toString();
 
-        updateConfiguration(configuration, workingDir, target + "::Scenario_" + functionName);
+        updateConfiguration(configuration, workingDir, target + "::" + functionName);
 
         return true;
     }
@@ -218,7 +218,7 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
         Path workingDir = (configFile != null) ? configFile.getParent() : Paths.get(configuration.getWorkingDirectorySafe());
         String target = workingDir.relativize(filePath).toString();
 
-        updateConfiguration(configuration, workingDir, target + "::Scenario_" + function.getName() + "#" + callIndex);
+        updateConfiguration(configuration, workingDir, target + "::" + function.getName() + "#" + callIndex);
 
         return true;
     }
