@@ -13,6 +13,8 @@ import com.jetbrains.python.psi.PyExpression;
 import com.jetbrains.python.psi.PyFunction;
 import com.jetbrains.python.psi.PyQualifiedNameOwner;
 import com.jetbrains.python.psi.PyReferenceExpression;
+import com.intellij.psi.PsiDocumentManager;
+import com.intellij.openapi.editor.Document;
 
 public class VedroTestUtils {
     public static final String SCENARIO_BASE_CLASS = "vedro._scenario.Scenario";
@@ -167,5 +169,30 @@ public class VedroTestUtils {
         }
         String name = ((PyQualifiedNameOwner) resolved).getQualifiedName();
         return name != null && name.equals(qualifiedName);
+    }
+
+    /**
+     * Gets the line number of the scenario decorator for a function
+     * @param function The Python function to check
+     * @return 1-based line number of the @scenario decorator, or -1 if not found
+     */
+    public static int getScenarioDecoratorLineNumber(@NotNull PyFunction function) {
+        PyDecoratorList decoratorList = function.getDecoratorList();
+        if (decoratorList == null) {
+            return -1;
+        }
+
+        for (PyDecorator decorator : decoratorList.getDecorators()) {
+            PyExpression callee = decorator.getCallee();
+            if (hasQualifiedName(callee, SCENARIO_FN_DECORATOR)) {
+                PsiDocumentManager manager = PsiDocumentManager.getInstance(function.getProject());
+                Document document = manager.getDocument(function.getContainingFile());
+                if (document != null) {
+                    int offset = decorator.getTextOffset();
+                    return document.getLineNumber(offset) + 1; // Convert to 1-based
+                }
+            }
+        }
+        return -1;
     }
 }

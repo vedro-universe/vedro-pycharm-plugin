@@ -193,9 +193,22 @@ public class VedroConfigurationProducer extends LazyRunConfigurationProducer<Ved
 
         Path configFile = findConfigFile(file, configuration.getProject().getBasePath(), configuration.getConfigFileName());
         Path workingDir = (configFile != null) ? configFile.getParent() : Paths.get(configuration.getWorkingDirectorySafe());
-        String target = workingDir.relativize(filePath).toString();
+        String relativePath = workingDir.relativize(filePath).toString();
 
-        updateConfiguration(configuration, workingDir, target + "::" + functionName);
+        String target;
+        if ("_".equals(functionName)) {
+            // For anonymous functions, use line number
+            int lineNumber = VedroTestUtils.getScenarioDecoratorLineNumber(element);
+            if (lineNumber == -1) {
+                return false;
+            }
+            target = relativePath + ":" + lineNumber;
+        } else {
+            // For named functions, use function name
+            target = relativePath + "::" + functionName;
+        }
+
+        updateConfiguration(configuration, workingDir, target);
 
         return true;
     }
