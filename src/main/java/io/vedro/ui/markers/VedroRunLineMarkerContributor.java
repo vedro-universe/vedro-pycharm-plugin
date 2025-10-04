@@ -45,6 +45,11 @@ public class VedroRunLineMarkerContributor extends RunLineMarkerContributor{
         }
         if (element instanceof PyCallExpression call
             && VedroTestUtils.isParamsCall(call)) {
+            // Don't show params markers for anonymous functions (named "_")
+            PyFunction function = com.intellij.psi.util.PsiTreeUtil.getParentOfType(call, PyFunction.class);
+            if (function != null && "_".equals(function.getName())) {
+                return null;
+            }
             return new Info(ICON_RUN_PARAMS, ExecutorAction.getActions(), null);
         }
         return null;
